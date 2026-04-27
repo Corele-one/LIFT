@@ -1,0 +1,93 @@
+module dynamic_led6(
+input [3:0]disp_data_right0,
+input [3:0]disp_data_right1,
+input [3:0]disp_data_right2,
+input [3:0]disp_data_right3,
+input [3:0]disp_data_right4,
+input [3:0]disp_data_right5,
+input [5:0] dp_en,
+input clk,
+output  reg  [7:0] seg,
+output  reg  [5:0] dig
+	);
+	
+	//分频为1KHz
+	reg[24:0] clk_div_cnt=0;
+	reg clk_div=0;
+	always @ (posedge clk)
+	begin
+		if (clk_div_cnt==24999)
+		begin
+			clk_div=~clk_div;
+			clk_div_cnt=0;
+		end
+		else 
+		    clk_div_cnt=clk_div_cnt+1;
+	end
+	//6进制计数器
+	reg [2:0] num=0;
+	always @ (posedge clk_div)
+	begin
+		if (num>=5)
+			num=0;
+		else
+			num=num+1;
+	end
+	
+	//译码器
+	always @ (*)
+	begin	
+		case(num)
+		0:dig=6'b111110;
+		1:dig=6'b111101;
+		2:dig=6'b111011;
+		3:dig=6'b110111;
+        4:dig=6'b101111;
+        5:dig=6'b011111;
+		default: dig=0;
+		endcase
+	end
+	
+	//选择器，确定显示数据
+	reg [3:0] disp_data;
+	reg dp_sel;
+	always @ (*)
+	begin	
+		case(num)
+		0: begin disp_data=disp_data_right0; dp_sel=dp_en[0]; end
+		1: begin disp_data=disp_data_right1; dp_sel=dp_en[1]; end
+		2: begin disp_data=disp_data_right2; dp_sel=dp_en[2]; end
+		3: begin disp_data=disp_data_right3; dp_sel=dp_en[3]; end
+        4: begin disp_data=disp_data_right4; dp_sel=dp_en[4]; end
+        5: begin disp_data=disp_data_right5; dp_sel=dp_en[5]; end
+		default: begin disp_data=0; dp_sel=1'b0; end
+		endcase
+	end
+	//显示译码器
+	always @ (*)
+	begin
+		case(disp_data)
+		4'h0: seg=8'h3f;// DP,GFEDCBA
+		4'h1: seg=8'h06;
+		4'h2: seg=8'h5b;
+		4'h3: seg=8'h4f;
+		4'h4: seg=8'h66;
+		4'h5: seg=8'h6d;
+		4'h6: seg=8'h7d;
+		4'h7: seg=8'h07;
+		4'h8: seg=8'h7f;
+		4'h9: seg=8'h6f;
+		4'ha: seg=8'h77;
+		4'hb: seg=8'h5c;
+		4'hc: seg=8'h54;
+		4'hd: seg=8'h5e;
+		4'he: seg=8'h00;
+		4'hf: seg=8'h71;
+		default: seg=0;
+		endcase
+
+		if (dp_sel)
+			seg[7] = 1'b1;
+	end
+   
+endmodule
