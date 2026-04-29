@@ -290,7 +290,7 @@ end
 always @(*) begin
     led = request_led;
 
-    if (state == ST_UP) begin
+    if (state == ST_DOWN) begin
         case (state_time_01s / 6'd6)
             6'd0: led[11:7] = 5'b00001;
             6'd1: led[11:7] = 5'b00010;
@@ -298,7 +298,7 @@ always @(*) begin
             6'd3: led[11:7] = 5'b01000;
             default: led[11:7] = 5'b10000;
         endcase
-    end else if (state == ST_DOWN) begin
+    end else if (state == ST_UP) begin
         case (state_time_01s / 6'd6)
             6'd0: led[11:7] = 5'b10000;
             6'd1: led[11:7] = 5'b01000;
@@ -334,13 +334,13 @@ always @(*) begin
         default: state_symbol = DISP_IDLE;
     endcase
 
-    disp0 = run_tenths;
-    disp1 = run_seconds;
-    disp2 = state_symbol;
-    disp3 = floor_display;
-    disp4 = DISP_BLANK;
+    disp0 = floor_display;
+    disp1 = state_symbol;
+    disp2 = DISP_BLANK;
+    disp3 = run_tenths;
+    disp4 = run_seconds;
     disp5 = DISP_BLANK;
-    disp_dp = 6'b000010;
+    disp_dp = 6'b010000;
 
     if (state == ST_OFF) begin
         disp0 = DISP_OFF_F;

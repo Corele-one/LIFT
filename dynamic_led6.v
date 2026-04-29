@@ -66,25 +66,37 @@ output  reg  [5:0] dig
 	//显示译码器
 	always @ (*)
 	begin
-		case(disp_data)
-		4'h0: seg=8'h3f;// DP,GFEDCBA
-		4'h1: seg=8'h06;
-		4'h2: seg=8'h5b;
-		4'h3: seg=8'h4f;
-		4'h4: seg=8'h66;
-		4'h5: seg=8'h6d;
-		4'h6: seg=8'h7d;
-		4'h7: seg=8'h07;
-		4'h8: seg=8'h7f;
-		4'h9: seg=8'h6f;
-		4'ha: seg=8'h77;
-		4'hb: seg=8'h5c;
-		4'hc: seg=8'h54;
-		4'hd: seg=8'h5e;
-		4'he: seg=8'h00;
-		4'hf: seg=8'h71;
-		default: seg=0;
-		endcase
+		if (num == 3'd1) begin
+			case(disp_data)
+			4'h0: seg=8'h40;// idle: g
+			4'ha: seg=8'h41;// up: a + g
+			4'hd: seg=8'h48;// down: g + d
+			4'he: seg=8'h00;
+			4'hb: seg=8'h5c;
+			4'hf: seg=8'h71;
+			default: seg=8'h00;
+			endcase
+		end else begin
+			case(disp_data)
+			4'h0: seg=8'h3f;// DP,GFEDCBA
+			4'h1: seg=8'h06;
+			4'h2: seg=8'h5b;
+			4'h3: seg=8'h4f;
+			4'h4: seg=8'h66;
+			4'h5: seg=8'h6d;
+			4'h6: seg=8'h7d;
+			4'h7: seg=8'h07;
+			4'h8: seg=8'h7f;
+			4'h9: seg=8'h6f;
+			4'ha: seg=8'h77;
+			4'hb: seg=8'h5c;
+			4'hc: seg=8'h54;
+			4'hd: seg=8'h5e;
+			4'he: seg=8'h00;
+			4'hf: seg=8'h71;
+			default: seg=0;
+			endcase
+		end
 
 		if (dp_sel)
 			seg[7] = 1'b1;
