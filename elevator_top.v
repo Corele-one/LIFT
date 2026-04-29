@@ -46,6 +46,7 @@ reg [3:0] current_floor;
 reg [3:0] target_floor;
 reg [15:0] request_led;
 reg return_to_1f;
+reg return_to_2f;
 reg [3:0] disp0;
 reg [3:0] disp1;
 reg [3:0] disp2;
@@ -122,6 +123,7 @@ always @(posedge clk or negedge rst_n) begin
         target_floor <= 4'd1;
         request_led <= 16'd0;
         return_to_1f <= 1'b0;
+        return_to_2f <= 1'b0;
         arrive_pulse <= 1'b0;
     end else begin
         arrive_pulse <= 1'b0;
@@ -131,12 +133,14 @@ always @(posedge clk or negedge rst_n) begin
             state_time_01s <= 6'd0;
             request_led <= 16'd0;
             return_to_1f <= 1'b0;
+            return_to_2f <= 1'b0;
         end else if (reset_to_1f && state != ST_IDLE_1F && state != ST_DOWN) begin
             state <= ST_DOWN;
             state_time_01s <= 6'd0;
             target_floor <= 4'd1;
             request_led <= 16'd0;
             return_to_1f <= 1'b1;
+            return_to_2f <= 1'b0;
         end else begin
             case (state)
                 ST_OFF: begin
@@ -159,6 +163,7 @@ always @(posedge clk or negedge rst_n) begin
                     state_time_01s <= 6'd0;
                     request_led <= 16'd0;
                     return_to_1f <= 1'b0;
+                    return_to_2f <= 1'b0;
                     current_floor <= 4'd1;
                     target_floor <= 4'd1;
 
@@ -177,6 +182,7 @@ always @(posedge clk or negedge rst_n) begin
                     state_time_01s <= 6'd0;
                     request_led <= 16'd0;
                     return_to_1f <= 1'b0;
+                    return_to_2f <= 1'b0;
                     current_floor <= 4'd2;
                     target_floor <= 4'd2;
 
@@ -195,9 +201,11 @@ always @(posedge clk or negedge rst_n) begin
                     if (key_valid && key_code == KEY_INNER_1F) begin
                         request_led <= 16'h0004;
                         return_to_1f <= 1'b1;
+                        return_to_2f <= 1'b0;
                     end else if (key_valid && key_code == KEY_1F_UP) begin
                         request_led <= 16'h0001;
                         return_to_1f <= 1'b1;
+                        return_to_2f <= 1'b0;
                     end
 
                     if (move_done) begin
@@ -212,6 +220,8 @@ always @(posedge clk or negedge rst_n) begin
                             state <= ST_IDLE_2F;
                             target_floor <= 4'd2;
                             request_led <= 16'd0;
+                            return_to_1f <= 1'b0;
+                            return_to_2f <= 1'b0;
                         end
                     end else if (tick_01s) begin
                         state_time_01s <= next_state_time_01s;
@@ -222,19 +232,28 @@ always @(posedge clk or negedge rst_n) begin
                     if (key_valid && key_code == KEY_INNER_2F) begin
                         request_led <= 16'h0008;
                         return_to_1f <= 1'b0;
+                        return_to_2f <= 1'b1;
                     end else if (key_valid && key_code == KEY_2F_DOWN) begin
                         request_led <= 16'h0002;
                         return_to_1f <= 1'b0;
+                        return_to_2f <= 1'b1;
                     end
 
                     if (move_done) begin
                         current_floor <= 4'd1;
                         arrive_pulse <= 1'b1;
                         state_time_01s <= 6'd0;
-                        state <= ST_IDLE_1F;
-                        target_floor <= 4'd1;
-                        request_led <= 16'd0;
-                        return_to_1f <= 1'b0;
+
+                        if (return_to_2f) begin
+                            state <= ST_UP;
+                            target_floor <= 4'd2;
+                        end else begin
+                            state <= ST_IDLE_1F;
+                            target_floor <= 4'd1;
+                            request_led <= 16'd0;
+                            return_to_1f <= 1'b0;
+                            return_to_2f <= 1'b0;
+                        end
                     end else if (tick_01s) begin
                         state_time_01s <= next_state_time_01s;
                     end
